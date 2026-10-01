@@ -1,16 +1,55 @@
-# React + Vite
+# ZIVA — Government Services, In Your Language 🇮🇳
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> **An AI-powered, voice-first government service assistant designed to make essential government services easier to discover and understand in a user's own language.**
 
-Currently, two official plugins are available:
+🔗 **Live Demo:** https://ziva-9dc8d.web.app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 🧩 Problem
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+For many first-time users, accessing government services online can be difficult because:
 
-## Expanding the ESLint configuration
+- Government websites can be difficult to navigate.
+- Information is often presented in formal or technical language.
+- Users may not be comfortable using English.
+- Users may not know which government scheme or service is relevant to their situation.
+- Searching through multiple government websites can be confusing.
+- Users may not know what documents or eligibility conditions they need to check.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+This creates an accessibility gap between citizens and the government services available to them.
+
+---
+
+# 💡 Our Solution — ZIVA
+
+**ZIVA** is a simple, multilingual, voice-first government service assistant.
+
+A user can:
+
+🎙️ **Speak naturally**
+
+💬 **Type a question**
+
+🇮🇳 **Interact in Tamil**
+
+🤖 **Receive simplified guidance**
+
+🔎 **Discover relevant government services**
+
+🔗 **Open the official government website**
+
+Instead of requiring users to understand complicated government portals first, ZIVA provides a simpler conversational starting point.
+
+---
+
+# ✨ Key Features
+
+## 🎙️ Voice-First Interaction
+
+Users can speak to ZIVA instead of typing.
+
+The application uses the browser's Web Speech API with Tamil speech recognition:
+
+```text
+ta-IN
