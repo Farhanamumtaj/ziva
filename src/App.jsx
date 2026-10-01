@@ -15,11 +15,19 @@ import {
 import { governmentServices } from "./data/services";
 
 function App() {
+  /*
+   * --------------------------------
+   * STATE
+   * --------------------------------
+   */
+
   const [messages, setMessages] = useState([
     {
       role: "assistant",
       text:
-        "வணக்கம் 👋 நான் ZIVA.\n\nஉங்களுக்கு தேவையான அரசு சேவையை கண்டுபிடிக்கவும், புரிந்துகொள்ளவும் நான் உதவுகிறேன்.\n\nதமிழில் பேசலாம் அல்லது தட்டச்சு செய்யலாம். 😊",
+        "வணக்கம் 👋 நான் ZIVA.\n\n" +
+        "உங்களுக்கு தேவையான அரசு சேவையை கண்டுபிடிக்கவும், புரிந்துகொள்ளவும் நான் உதவுகிறேன்.\n\n" +
+        "தமிழில் பேசலாம் அல்லது தட்டச்சு செய்யலாம். 😊",
     },
   ]);
 
@@ -69,7 +77,7 @@ function App() {
 
   /*
    * --------------------------------
-   * TAMIL TEXT TO SPEECH
+   * TEXT TO SPEECH
    * --------------------------------
    */
 
@@ -92,7 +100,9 @@ function App() {
       return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(cleanText);
+    const utterance = new SpeechSynthesisUtterance(
+      cleanText
+    );
 
     utterance.lang = "ta-IN";
     utterance.rate = 0.85;
@@ -160,27 +170,18 @@ function App() {
 
   /*
    * --------------------------------
-   * RESET CURRENT SERVICE
+   * RESET SERVICE STATE
    * --------------------------------
    */
 
-  const resetConversationForService = (service) => {
+  const resetServiceState = (service) => {
     setPmuyActive(false);
     setPmuyStep(0);
     setSelectedService(service);
 
-    window.speechSynthesis?.cancel();
-
-    setMessages([
-      {
-        role: "assistant",
-        text:
-          "வணக்கம் 👋 நான் ZIVA.\n\n" +
-          `${service.icon} ${service.tamilName}\n\n` +
-          `${service.description}\n\n` +
-          "இந்த சேவையைப் பற்றி உங்களுக்கு உதவுகிறேன். 😊",
-      },
-    ]);
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
   };
 
   /*
@@ -189,26 +190,134 @@ function App() {
    * --------------------------------
    */
 
-  const startPMUY = (freshConversation = false) => {
-    setSelectedService(pmuy);
+  const startPMUY = () => {
+    resetServiceState(pmuy);
+
     setPmuyActive(true);
     setPmuyStep(0);
 
-    if (freshConversation) {
-      setMessages([
-        {
-          role: "assistant",
-          text:
-            "🔥 பிரதான் மந்திரி உஜ்வலா யோஜனா\n\n" +
-            "உங்கள் LPG gas connection தேவையைப் பற்றி உதவுகிறேன். 😊",
-        },
-      ]);
-    }
+    setMessages([
+      {
+        role: "assistant",
+        text:
+          "🔥 பிரதான் மந்திரி உஜ்வலா யோஜனா\n\n" +
+          "உங்கள் LPG gas connection தேவையைப் பற்றி உதவுகிறேன். 😊",
+      },
+    ]);
 
     const question =
       "நீங்கள் 18 வயது அல்லது அதற்கு மேற்பட்டவரா?";
 
-    addAssistantMessage(question);
+    setTimeout(() => {
+      addAssistantMessage(question);
+    }, 0);
+  };
+
+  /*
+   * --------------------------------
+   * START NORMAL SERVICE
+   * --------------------------------
+   */
+
+  const startNormalService = (service) => {
+    resetServiceState(service);
+
+    let firstMessage =
+      "வணக்கம் 👋 நான் ZIVA.\n\n" +
+      `${service.icon} ${service.tamilName}\n\n` +
+      `${service.description}\n\n` +
+      "இந்த சேவையைப் பற்றி உங்களுக்கு உதவுகிறேன். 😊";
+
+    /*
+     * EDUCATION
+     */
+
+    if (service.id === "education") {
+      firstMessage =
+        "🎓 கல்வி அல்லது scholarship உதவி தேடுகிறீர்களா?\n\n" +
+        "உங்கள் தேவையை எளிமையாக சொல்லுங்கள். உதாரணமாக:\n\n" +
+        "• scholarship வேண்டும்\n" +
+        "• கல்லூரி கட்டண உதவி வேண்டும்\n" +
+        "• மாணவருக்கான அரசு திட்டம் வேண்டும்";
+    }
+
+    /*
+     * JOBS
+     */
+
+    if (service.id === "jobs") {
+      firstMessage =
+        "💼 வேலை அல்லது வேலைவாய்ப்பு உதவி தேடுகிறீர்களா?\n\n" +
+        "உங்களுக்கு தேவையானதை சொல்லுங்கள். உதாரணமாக:\n\n" +
+        "• வேலை தேடுகிறேன்\n" +
+        "• skill training வேண்டும்\n" +
+        "• அரசு வேலை தேடுகிறேன்";
+    }
+
+    /*
+     * HEALTH
+     */
+
+    if (service.id === "health") {
+      firstMessage =
+        "🏥 மருத்துவம் அல்லது சுகாதார உதவி தேடுகிறீர்களா?\n\n" +
+        "உங்களுக்கு தேவையான மருத்துவ உதவியை எளிமையாக சொல்லுங்கள்.\n\n" +
+        "அதற்கேற்ற அரசு திட்டங்களை கண்டுபிடிக்க உதவுகிறேன்.";
+    }
+
+    /*
+     * WOMEN HELPLINE
+     */
+
+    if (service.id === "women-helpline") {
+      firstMessage =
+        "🆘 நீங்கள் பாதுகாப்பு அல்லது அவசர உதவி தேடுகிறீர்கள் என்றால், " +
+        "பெண்கள் உதவி எண் 181-ஐ தொடர்பு கொள்ளலாம்.\n\n" +
+        "உங்களுக்கு உடனடி ஆபத்து இருந்தால், அருகிலுள்ள அவசர சேவையையும் தொடர்பு கொள்ளுங்கள்.";
+    }
+
+    /*
+     * SAKHI NIWAS
+     */
+
+    if (service.id === "sakhi-niwas") {
+      firstMessage =
+        "🏠 வேலை செய்யும் பெண்களுக்கான தங்குமிடம் பற்றிய தகவலை பார்க்கலாம்.\n\n" +
+        "உங்கள் பகுதியில் Sakhi Niwas வசதி உள்ளதா என்பதையும், " +
+        "அந்த facility-யின் admission requirements-ஐயும் சரிபார்க்க வேண்டும்.";
+    }
+
+    /*
+     * PMMVY
+     */
+
+    if (service.id === "pmmvy") {
+      firstMessage =
+        "🤰 PMMVY பற்றிய தகவலை பார்க்கலாம்.\n\n" +
+        "உங்கள் நிலைக்கு பொருந்துமா என்பதை அதிகாரப்பூர்வ PMMVY தகவலுடன் சரிபார்க்கலாம்.";
+    }
+
+    /*
+     * MYSCHEME
+     */
+
+    if (service.id === "myscheme") {
+      firstMessage =
+        "🔎 அரசு திட்டங்களைத் தேடலாம்.\n\n" +
+        "உங்கள் வயது, கல்வி, வேலை, வருமானம் அல்லது தேவையை சொல்லுங்கள்.\n\n" +
+        "அதற்கேற்ற அரசு திட்டங்களை கண்டுபிடிக்க உதவுகிறேன்.";
+    }
+
+    setMessages([
+      {
+        role: "assistant",
+        text: firstMessage,
+      },
+    ]);
+
+    setTimeout(() => {
+      speak(firstMessage);
+    }, 0);
   };
 
   /*
@@ -223,75 +332,14 @@ function App() {
     }
 
     setLoading(false);
+    setInput("");
 
     if (service.id === "pmuy") {
-      startPMUY(true);
+      startPMUY();
       return;
     }
 
-    resetConversationForService(service);
-
-    if (service.id === "education") {
-      addAssistantMessage(
-        "🎓 கல்வி அல்லது scholarship உதவி தேடுகிறீர்களா?\n\n" +
-          "உங்கள் தேவையை எளிமையாக சொல்லுங்கள். உதாரணமாக:\n\n" +
-          "• scholarship வேண்டும்\n" +
-          "• கல்லூரி கட்டண உதவி வேண்டும்\n" +
-          "• மாணவருக்கான அரசு திட்டம் வேண்டும்"
-      );
-      return;
-    }
-
-    if (service.id === "jobs") {
-      addAssistantMessage(
-        "💼 வேலை அல்லது வேலைவாய்ப்பு உதவி தேடுகிறீர்களா?\n\n" +
-          "உங்களுக்கு தேவையானதை சொல்லுங்கள். உதாரணமாக:\n\n" +
-          "• வேலை தேடுகிறேன்\n" +
-          "• skill training வேண்டும்\n" +
-          "• அரசு வேலை தேடுகிறேன்"
-      );
-      return;
-    }
-
-    if (service.id === "health") {
-      addAssistantMessage(
-        "🏥 மருத்துவம் அல்லது சுகாதார உதவி தேடுகிறீர்களா?\n\n" +
-          "உங்களுக்கு தேவையான மருத்துவ உதவியை எளிமையாக சொல்லுங்கள்.\n\n" +
-          "அதற்கேற்ற அரசு திட்டங்களை கண்டுபிடிக்க உதவுகிறேன்."
-      );
-      return;
-    }
-
-    if (service.id === "women-helpline") {
-      addAssistantMessage(
-        "🆘 நீங்கள் பாதுகாப்பு அல்லது அவசர உதவி தேடுகிறீர்கள் என்றால், பெண்கள் உதவி எண் 181-ஐ தொடர்பு கொள்ளலாம்.\n\n" +
-          "உங்களுக்கு உடனடி ஆபத்து இருந்தால், அருகிலுள்ள அவசர சேவையையும் தொடர்பு கொள்ளுங்கள்."
-      );
-      return;
-    }
-
-    if (service.id === "sakhi-niwas") {
-      addAssistantMessage(
-        "🏠 வேலை செய்யும் பெண்களுக்கான தங்குமிடம் பற்றிய தகவலை பார்க்கலாம்.\n\n" +
-          "உங்கள் பகுதியில் Sakhi Niwas வசதி உள்ளதா என்பதையும், அந்த facility-யின் admission requirements-ஐயும் சரிபார்க்க வேண்டும்."
-      );
-      return;
-    }
-
-    if (service.id === "pmmvy") {
-      addAssistantMessage(
-        "🤰 PMMVY பற்றிய தகவலை பார்க்கலாம்.\n\n" +
-          "உங்கள் நிலைக்கு பொருந்துமா என்பதை அதிகாரப்பூர்வ PMMVY தகவலுடன் சரிபார்க்கலாம்."
-      );
-      return;
-    }
-
-    if (service.id === "myscheme") {
-      addAssistantMessage(
-        "🔎 அரசு திட்டங்களைத் தேடலாம்.\n\n" +
-          "உங்கள் வயது, கல்வி, வேலை, வருமானம் அல்லது தேவையை சொல்லுங்கள். அதற்கேற்ற அரசு திட்டங்களை கண்டுபிடிக்க உதவுகிறேன்."
-      );
-    }
+    startNormalService(service);
   };
 
   /*
@@ -334,10 +382,25 @@ function App() {
     setInput("");
 
     /*
-     * IMPORTANT:
-     * Detect a new service BEFORE PMUY answers.
+     * --------------------------------
+     * SERVICE DETECTION FIRST
+     * --------------------------------
      *
-     * This allows the user to leave PMUY at any time.
+     * This is the most important part.
+     *
+     * Even if PMUY is currently active,
+     * the user can switch to another service.
+     *
+     * Example:
+     *
+     * PMUY asks:
+     * "Are you 18 or above?"
+     *
+     * User says:
+     * "எனக்கு வேலை வேண்டும்"
+     *
+     * ZIVA switches to Jobs instead of
+     * treating the sentence as a PMUY answer.
      */
 
     const detectedService = detectService(userMessage);
@@ -346,15 +409,35 @@ function App() {
       detectedService &&
       detectedService.id !== selectedService?.id
     ) {
+      /*
+       * Show the user's message first.
+       */
       addUserMessage(userMessage);
-      switchToService(detectedService);
+
+      /*
+       * Small delay lets React render the
+       * user's message before the new service
+       * conversation is displayed.
+       */
+      setTimeout(() => {
+        switchToService(detectedService);
+      }, 0);
+
       return;
     }
+
+    /*
+     * --------------------------------
+     * ADD NORMAL USER MESSAGE
+     * --------------------------------
+     */
 
     addUserMessage(userMessage);
 
     /*
+     * --------------------------------
      * HELP INTENT
+     * --------------------------------
      */
 
     if (isHelpMessage(userMessage)) {
@@ -375,7 +458,9 @@ function App() {
     }
 
     /*
+     * --------------------------------
      * PMUY ACTIVE
+     * --------------------------------
      */
 
     if (pmuyActive) {
@@ -388,6 +473,7 @@ function App() {
 
       if (result.completed) {
         setPmuyActive(false);
+        setPmuyStep(0);
         setSelectedService(pmuy);
       } else {
         setPmuyStep(result.nextStep);
@@ -397,7 +483,9 @@ function App() {
     }
 
     /*
+     * --------------------------------
      * LOCAL SERVICE DETECTION
+     * --------------------------------
      */
 
     if (detectedService) {
@@ -406,7 +494,9 @@ function App() {
     }
 
     /*
+     * --------------------------------
      * GEMINI
+     * --------------------------------
      */
 
     setLoading(true);
@@ -423,6 +513,10 @@ function App() {
         addAssistantMessage(result.response);
       }
 
+      /*
+       * Gemini can also suggest a service.
+       */
+
       if (result?.selectedServiceId) {
         const service =
           governmentServices.find(
@@ -435,10 +529,7 @@ function App() {
         }
       }
     } catch (error) {
-      console.error(
-        "ZIVA AI error:",
-        error
-      );
+      console.error("ZIVA AI error:", error);
 
       addAssistantMessage(
         "மன்னிக்கவும் 😊 இப்போது சிறிய தொழில்நுட்ப சிக்கல் உள்ளது.\n\n" +
